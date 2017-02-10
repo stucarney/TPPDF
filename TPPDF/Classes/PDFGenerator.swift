@@ -227,7 +227,10 @@ open class PDFGenerator  {
         var done = false
         
         repeat {
-            let (frameRef, drawnSize) = calculateTextFrameAndDrawnSizeInOnePage(container, text: currentText!, currentRange: currentRange, textMaxWidth: textMaxWidth)
+            var (frameRef, drawnSize) = calculateTextFrameAndDrawnSizeInOnePage(container, text: currentText!, currentRange: currentRange, textMaxWidth: textMaxWidth)
+            if checkContentHeightForNewPage(container: container, purposedContentHeight: drawnSize.height) {
+                (frameRef, drawnSize) = calculateTextFrameAndDrawnSizeInOnePage(container, text: currentText!, currentRange: currentRange, textMaxWidth: textMaxWidth)
+            }
             // Get the graphics context.
             let currentContext = UIGraphicsGetCurrentContext()!
             
@@ -836,5 +839,20 @@ open class PDFGenerator  {
         }
         
         return documentInfo
+    }
+    
+    fileprivate func checkContentHeightForNewPage(container: Container, purposedContentHeight: CGFloat) -> Bool {
+        if container.isHeader || container.isFooter {
+            return false
+        }
+        
+        let remainingContentHeight = pageBounds.height - maxHeaderHeight() - headerSpace - maxFooterHeight() - footerSpace - contentHeight
+        
+        if remainingContentHeight < purposedContentHeight {
+            generateNewPage()
+            return true
+        }
+        
+        return false
     }
 }
