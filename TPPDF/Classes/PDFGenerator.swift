@@ -307,7 +307,11 @@ open class PDFGenerator  {
     
     fileprivate func drawImage(_ container: Container, image: UIImage, size: CGSize, caption: NSAttributedString, sizeFit: ImageSizeFit) {
         var (imageSize, captionSize) = calculateImageCaptionSize(container, image: image, size: size, caption: caption, sizeFit: sizeFit)
-    
+        if size != CGSize.zero && imageSize.height < size.height {
+            generateNewPage()
+            (imageSize, captionSize) = calculateImageCaptionSize(container, image: image, size: size, caption: caption, sizeFit: sizeFit)
+        }
+        
         let y: CGFloat = {
             switch container.normalize {
             case .headerLeft:
